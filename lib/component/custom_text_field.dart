@@ -12,27 +12,39 @@ class CustomTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: TextStyle(fontSize: 25.0,fontWeight: FontWeight.w700),),
-        SizedBox(
-          width: 285,
-          child: TextFormField(
-            onSaved: onSaved,
-            cursorColor: Colors.black,
-            maxLines: label == 'Title' ? 1 : null,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.red,
-              border: InputBorder.none,
-              labelText: labelText,
-              labelStyle: TextStyle(
-                fontSize: 20.0,
-                color: Color(0XFF899498),
-              ),
-              floatingLabelBehavior: FloatingLabelBehavior.never,
-            ),
-            textAlignVertical: TextAlignVertical(y : -1.0),
-          ),
-        ),
+        if(label == 'Title') renderTextField(),
+        if(label == 'Content') Expanded(child: renderTextField()),
       ],
     );
   }
+
+  Widget renderTextField(){
+    final String originText = '';
+    return SizedBox(
+      width: 285,
+      child: TextFormField(
+        onChanged: (text){
+          if(text.length < originText.length){
+
+          }
+        },
+        expands: label == 'Content',
+        onSaved: onSaved,
+        cursorColor: Colors.black,
+        maxLines: label == 'Title' ? 1 : null,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          labelText: labelText,
+          labelStyle: TextStyle(
+            fontSize: 20.0,
+            color: Color(0XFF899498),
+          ),
+          floatingLabelBehavior: FloatingLabelBehavior.never,
+        ),
+        textAlignVertical: TextAlignVertical.top,
+      ),
+    );
+  }
 }
+
+

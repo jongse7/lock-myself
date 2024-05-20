@@ -46,11 +46,13 @@ class _NavigationBarScreenState extends State<NavigationBarScreen>
       bottomNavigationBar: Container(
         height: 80,
         decoration: const BoxDecoration(
+          color: Colors.white,
           border: Border(
             top: BorderSide(width: 2.0, color: Color(0XFFE0E0E0)),
           ),
         ),
         child: BottomNavigationBar(
+          backgroundColor: Colors.white,
           items: ICONS_LIST[tabController.index]
               .map((icon) => BottomNavigationBarItem(icon: icon, label: ''))
               .toList(),

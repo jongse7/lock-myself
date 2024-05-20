@@ -5,7 +5,7 @@ import '../model/diary_model.dart';
 
 class DiaryBox extends StatelessWidget {
   final int index;
-  final List<DiaryModel> diaryData;
+  final List diaryData;
 
   const DiaryBox({required this.index, required this.diaryData, super.key});
 
