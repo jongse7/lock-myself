@@ -23,11 +23,6 @@ class CustomTextField extends StatelessWidget {
     return SizedBox(
       width: 285,
       child: TextFormField(
-        onChanged: (text){
-          if(text.length < originText.length){
-
-          }
-        },
         expands: label == 'Content',
         onSaved: onSaved,
         cursorColor: Colors.black,

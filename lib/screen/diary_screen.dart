@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:lock_myself/component/custom_text_field.dart';
 import 'package:lock_myself/const/color.dart';
@@ -18,6 +19,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
   final GlobalKey<FormState> formKey = GlobalKey();
   String? title;
   String? content;
+  int backspaceCount = 0;
 
   @override
   Widget build(BuildContext context) {

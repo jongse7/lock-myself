@@ -23,40 +23,38 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: ValueListenableBuilder<Box>(
-        valueListenable: Hive.box<DiaryModel>(diaryBox).listenable(),
-        builder: (context, box, widget) {
-          return Scaffold(
-            backgroundColor: Colors.white,
-            body: RefreshIndicator(
-              onRefresh: () async {
-                await Future.delayed(Duration(seconds: 1));
-              },
-              child: Stack(children: [
-                CustomScrollView(
-                  slivers: [
-                    LogoAndSearchBar(),
-                    DiaryListBuilder(diaryData: List.from(box.values.toList().reversed)),
-                  ],
+    return ValueListenableBuilder<Box>(
+      valueListenable: Hive.box<DiaryModel>(diaryBox).listenable(),
+      builder: (context, box, widget) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: RefreshIndicator(
+            onRefresh: () async {
+              await Future.delayed(Duration(seconds: 1));
+            },
+            child: Stack(children: [
+              CustomScrollView(
+                slivers: [
+                  LogoAndSearchBar(),
+                  DiaryListBuilder(diaryData: List.from(box.values.toList().reversed)),
+                ],
+              ),
+              Positioned(
+                bottom: 20,
+                right: 20,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => DiaryScreen()));
+                  },
+                  child: Image.asset('asset/icons/plus_diary.png'),
                 ),
-                Positioned(
-                  bottom: 20,
-                  right: 20,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => DiaryScreen()));
-                    },
-                    child: Image.asset('asset/icons/plus_diary.png'),
-                  ),
-                  width: 100,
-                ),
-              ]),
-            ),
-          );
-        },
-      ),
+                width: 100,
+              ),
+            ]),
+          ),
+        );
+      },
     );
   }
 }
