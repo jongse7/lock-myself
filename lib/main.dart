@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lock_myself/screen/home_screen.dart';
 import 'package:lock_myself/screen/navigation_bar_screen.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';

@@ -3,11 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:lock_myself/component/custom_text_field.dart';
 import 'package:lock_myself/const/color.dart';
-import 'package:lock_myself/screen/home_screen.dart';
-
 import '../main.dart';
 import '../model/diary_model.dart';
-
 class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
 
@@ -19,7 +16,26 @@ class _DiaryScreenState extends State<DiaryScreen> {
   final GlobalKey<FormState> formKey = GlobalKey();
   String? title;
   String? content;
-  int backspaceCount = 0;
+  String? status;
+  TextEditingController _controllerTitle = TextEditingController();
+  TextEditingController _controllerContent = TextEditingController();
+  int _backspaceCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllerTitle.addListener(_onTextChanged);
+  }
+
+  void _onTextChanged() {
+    // Text change handling logic if needed
+  }
+
+  @override
+  void dispose() {
+    _controllerTitle.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,15 +49,26 @@ class _DiaryScreenState extends State<DiaryScreen> {
           key: formKey,
           child: Column(
             children: [
-              _Title(onTitleSaved: (String? val) {
-                title = val;
-              }),
+              _Title(
+                  backspaceTextInputFormatter: [
+                    BackspaceTextInputFormatter(_onBackspaceDetected)
+                  ],
+                  controller: _controllerTitle,
+                  onTitleSaved: (String? val) {
+                    title = val;
+                  }),
               _Content(
+                backspaceTextInputFormatter: [
+                  BackspaceTextInputFormatter(_onBackspaceDetected)
+                ],
+                controller: _controllerContent,
                 onContentSaved: (String? val) {
                   content = val;
                 },
               ),
-              _SubmitButton(onSavePressed: onSavePressed,),
+              _SubmitButton(
+                onSavePressed: onSavePressed,
+              ),
             ],
           ),
         ),
@@ -71,9 +98,29 @@ class _DiaryScreenState extends State<DiaryScreen> {
     );
   }
 
+  void _onBackspaceDetected() {
+    _backspaceCount++;
+    print(_backspaceCount);
+  }
+
   void onSavePressed() {
-    // formKey는 생성을 했는데
-    // Form 위젯과 결합을 안했을때
+    // title, content null 검사
+    if(title == null){
+      title = '제목 없음';
+    }
+    if(content == null){
+      content = '내용 없음';
+    }
+    
+    // 자물쇠 잠금 상태 변수 status 초기화
+    if(_backspaceCount >= 0 && _backspaceCount < 10){
+      status = 'open';
+    }else if(_backspaceCount >= 10 && _backspaceCount < 25){
+      status = 'loose';
+    }else{
+      status = 'lock';
+    }
+
     // 다른 개발자의 실수를 대비 예외처리
     if (formKey.currentState == null) {
       return;
@@ -81,9 +128,13 @@ class _DiaryScreenState extends State<DiaryScreen> {
     // 모든 하위 TextFormField의 validate에서 null을 return할 때
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
-      DiaryModel diaryModel = DiaryModel(dateTime: DateTime.now(), title: title!, content: content!, status: 'lock');
+      DiaryModel diaryModel = DiaryModel(
+          dateTime: DateTime.now(),
+          title: title!,
+          content: content!,
+          status: status!);
       final box = Hive.box<DiaryModel>(diaryBox);
-      box.put(DateTime.now().toString(),diaryModel);
+      box.put(DateTime.now().toString(), diaryModel);
     }
     // 하위 TextFormField의 validate에서 에러(text)를 return할 때
     else {
@@ -94,24 +145,46 @@ class _DiaryScreenState extends State<DiaryScreen> {
 }
 
 class _Title extends StatelessWidget {
+  final List<TextInputFormatter> backspaceTextInputFormatter;
+  final TextEditingController controller;
   final FormFieldSetter<String> onTitleSaved;
-  const _Title({required this.onTitleSaved, Key? key}) : super(key: key);
+
+  const _Title(
+      {required this.backspaceTextInputFormatter,
+      required this.controller,
+      required this.onTitleSaved,
+      Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return CustomTextField(
-        label: 'Title', labelText: '제목을 작성해주세요', onSaved: onTitleSaved);
+        backspaceTextInputFormatter: backspaceTextInputFormatter,
+        controller: controller,
+        label: 'Title',
+        labelText: '제목을 작성해주세요',
+        onSaved: onTitleSaved);
   }
 }
 
 class _Content extends StatelessWidget {
+  final List<TextInputFormatter> backspaceTextInputFormatter;
+  final TextEditingController controller;
   final FormFieldSetter<String> onContentSaved;
-  const _Content({required this.onContentSaved, Key? key}) : super(key: key);
+
+  const _Content(
+      {required this.backspaceTextInputFormatter,
+      required this.controller,
+      required this.onContentSaved,
+      Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
         child: CustomTextField(
+      backspaceTextInputFormatter: backspaceTextInputFormatter,
+      controller: controller,
       label: 'Content',
       labelText: '일기를 작성해주세요',
       onSaved: onContentSaved,
@@ -121,7 +194,9 @@ class _Content extends StatelessWidget {
 
 class _SubmitButton extends StatelessWidget {
   final VoidCallback onSavePressed;
-  const _SubmitButton({required this.onSavePressed,Key? key}) : super(key: key);
+
+  const _SubmitButton({required this.onSavePressed, Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -133,37 +208,40 @@ class _SubmitButton extends StatelessWidget {
         ),
       ),
       child: Center(
-        child: _SaveButton(
-          onPressed: onSavePressed,
-        ),
+        child: SizedBox(
+          width: 140,
+          height: 50,
+          child: ElevatedButton(
+            onPressed: onSavePressed,
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(27.5),
+              ),
+              backgroundColor: PRIMARY_COLOR,
+            ),
+            child: Text(
+              '작성완료',
+              style: TextStyle(
+                  color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+          ),
+        )
       ),
     );
   }
 }
 
-class _SaveButton extends StatelessWidget {
-  final VoidCallback onPressed;
-  const _SaveButton({required this.onPressed, Key? key}) : super(key: key);
+class BackspaceTextInputFormatter extends TextInputFormatter {
+  final VoidCallback onBackspaceDetected;
+
+  BackspaceTextInputFormatter(this.onBackspaceDetected);
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 140,
-      height: 50,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(27.5),
-          ),
-          backgroundColor: PRIMARY_COLOR,
-        ),
-        child: Text(
-          '작성완료',
-          style: TextStyle(
-              color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
-        ),
-      ),
-    );
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (oldValue.text.length > newValue.text.length) {
+      onBackspaceDetected();
+    }
+    return newValue;
   }
 }

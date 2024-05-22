@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:lock_myself/screen/diary_screen.dart';
 
 class CustomTextField extends StatelessWidget {
+  final List<TextInputFormatter> backspaceTextInputFormatter;
+  final TextEditingController controller;
   final String label;
   final String labelText;
   final FormFieldSetter<String> onSaved;
-  const CustomTextField({required this.label,required this.labelText, required this.onSaved, super.key});
+  const CustomTextField({required this.backspaceTextInputFormatter,required this.controller,required this.label,required this.labelText, required this.onSaved, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +27,8 @@ class CustomTextField extends StatelessWidget {
     return SizedBox(
       width: 285,
       child: TextFormField(
+        controller: controller,
+        inputFormatters: backspaceTextInputFormatter,
         expands: label == 'Content',
         onSaved: onSaved,
         cursorColor: Colors.black,

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:lock_myself/screen/user_screen.dart';
+import 'package:lock_myself/container/user_screen.dart';
 
 import '../const/color.dart';
 import '../const/icon.dart';
-import 'calendar_screen.dart';
-import 'home_screen.dart';
+import '../container/calendar_screen.dart';
+import '../container/home_screen.dart';
 
 class NavigationBarScreen extends StatefulWidget {
   const NavigationBarScreen({super.key});
