@@ -33,6 +33,7 @@ class CustomTextField extends StatelessWidget {
         onSaved: onSaved,
         cursorColor: Colors.black,
         maxLines: label == 'Title' ? 1 : null,
+        maxLength: label == 'Title' ? 12 : 500,
         decoration: InputDecoration(
           border: InputBorder.none,
           labelText: labelText,

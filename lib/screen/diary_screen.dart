@@ -5,6 +5,7 @@ import 'package:lock_myself/component/custom_text_field.dart';
 import 'package:lock_myself/const/color.dart';
 import '../main.dart';
 import '../model/diary_model.dart';
+import '../utils/data_utils.dart';
 class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
 
@@ -19,7 +20,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
   String? status;
   TextEditingController _controllerTitle = TextEditingController();
   TextEditingController _controllerContent = TextEditingController();
-  int _backspaceCount = 0;
+  int backspaceCount = 0;
 
   @override
   void initState() {
@@ -99,8 +100,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
   }
 
   void _onBackspaceDetected() {
-    _backspaceCount++;
-    print(_backspaceCount);
+    backspaceCount++;
+    print(backspaceCount);
   }
 
   void onSavePressed() {
@@ -111,15 +112,14 @@ class _DiaryScreenState extends State<DiaryScreen> {
     if(content == null){
       content = '내용 없음';
     }
-    
-    // 자물쇠 잠금 상태 변수 status 초기화
-    if(_backspaceCount >= 0 && _backspaceCount < 10){
-      status = 'open';
-    }else if(_backspaceCount >= 10 && _backspaceCount < 25){
-      status = 'loose';
-    }else{
-      status = 'lock';
-    }
+
+    status = DataUtils.backspaceToStatus(backspaceCount);
+
+    // userBox 접근
+    final userData = Hive.box(userBox);
+    // 전체 backspace 횟수 갱신
+    int newTotalBackspace = userData.get('totalBackspace') + backspaceCount;
+    userData.put('totalBackspace', newTotalBackspace);
 
     // 다른 개발자의 실수를 대비 예외처리
     if (formKey.currentState == null) {
@@ -128,18 +128,38 @@ class _DiaryScreenState extends State<DiaryScreen> {
     // 모든 하위 TextFormField의 validate에서 null을 return할 때
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
+      // DiaryModel 생성 및 데이터 삽입
       DiaryModel diaryModel = DiaryModel(
-          dateTime: DateTime.now(),
+          dateTime: DateTime.utc(DateTime.now().year, DateTime.now().month, DateTime.now().day
+          ),
           title: title!,
           content: content!,
           status: status!);
-      final box = Hive.box<DiaryModel>(diaryBox);
-      box.put(DateTime.now().toString(), diaryModel);
+      // diaryBox 접근
+      final diaryData = Hive.box<DiaryModel>(diaryBox);
+
+      // 일기 매일 쓰기 챌린지 갱신 -> diaryBox에 저장하기 전 제일 최신 날짜와 비교
+      final challengeDay = userData.get('challengeDay');
+
+      final lastDate;
+      if(diaryData.isNotEmpty){lastDate = diaryData.values.last.dateTime;}
+      else{lastDate = null;}
+      final newChallenge = DataUtils.updateChallengeDay(challengeDay, DateTime.now(), lastDate);
+      userData.put('challengeDay', newChallenge);
+
+      // diary 저장
+      diaryData.put(DateTime.now().toString(), diaryModel);
+      // 전체 일기 개수 갱신
+      final totalNum = diaryData.length;
+      userData.put('totalNumber', totalNum);
+      // 평균 backspace 횟수 갱신
+      userData.put('averageBackspace', newTotalBackspace/totalNum);
     }
     // 하위 TextFormField의 validate에서 에러(text)를 return할 때
     else {
       print('에러가 있습니다.');
     }
+    print('pop');
     Navigator.of(context).pop();
   }
 }

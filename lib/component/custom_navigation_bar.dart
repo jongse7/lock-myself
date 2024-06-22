@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:lock_myself/container/user_screen.dart';
-
 import '../const/color.dart';
 import '../const/icon.dart';
 import '../container/calendar_screen.dart';
 import '../container/home_screen.dart';
 
-class NavigationBarScreen extends StatefulWidget {
-  const NavigationBarScreen({super.key});
+class CustomNavigationBar extends StatefulWidget {
+  const CustomNavigationBar({super.key});
 
   @override
-  State<NavigationBarScreen> createState() => _NavigationBarScreenState();
+  State<CustomNavigationBar> createState() => _CustomNavigationBarState();
 }
 
-class _NavigationBarScreenState extends State<NavigationBarScreen>
+class _CustomNavigationBarState extends State<CustomNavigationBar>
     with TickerProviderStateMixin {
   late final TabController tabController;
 
